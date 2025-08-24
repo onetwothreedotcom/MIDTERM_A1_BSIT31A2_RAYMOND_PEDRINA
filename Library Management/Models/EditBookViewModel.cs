@@ -36,5 +36,6 @@ namespace Library_Management.Models
         public string? AuthorProfileImageUrl { get; set; }
         [Display(Name = "Cover Image URL")]
         public string? CoverImageUrl { get; set; }
+        public object? Copies { get; internal set; }
     }
 }

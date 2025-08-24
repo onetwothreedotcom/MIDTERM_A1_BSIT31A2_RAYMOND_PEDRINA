@@ -1,4 +1,4 @@
-﻿@model Library_Management.Models.BookListViewModel
+﻿@model BookDetailsViewModel
 
 <div class="modal-header bg-primary text-white">
     <h5 class="modal-title">@Model.Title</h5>
@@ -7,15 +7,12 @@
 
 <div class="modal-body">
     <div class="row g-4">
-        <!-- Cover Image -->
         <div class="col-md-4 text-center">
             <img src="@Model.CoverImageUrl"
                  class="img-fluid rounded shadow-sm"
                  alt="@Model.Title"
                  style="max-height: 300px; object-fit: cover;">
         </div>
-
-        <!-- Details -->
         <div class="col-md-8">
             <dl class="row mb-0">
                 <dt class="col-sm-4 fw-semibold">@Html.DisplayNameFor(m => m.ISBN)</dt>
@@ -37,10 +34,13 @@
                 <dd class="col-sm-8">@Model.Genre</dd>
 
                 <dt class="col-sm-4 fw-semibold">@Html.DisplayNameFor(m => m.PublishedDate)</dt>
-                <dd class="col-sm-8">@Model.PublishedDate?.ToString("yyyy-MM-dd")</dd>
+                <dd class="col-sm-8">@Model.PublishedDate.ToString("yyyy-MM-dd")</dd>
+
+                <dt class="col-sm-4 fw-semibold">Total Copies</dt>
+                <dd class="col-sm-8">@Model.Copies.Count</dd>
 
                 <dt class="col-sm-4 fw-semibold">Available Copies</dt>
-                <dd class="col-sm-8">@Model.AvailableCopies / @Model.TotalCopies</dd>
+                <dd class="col-sm-8">@Model.Copies.Count(c => !c.IsPulledOut)</dd>
             </dl>
 
             <hr />
@@ -49,64 +49,121 @@
             <p class="mb-0">@Model.Description</p>
         </div>
     </div>
+
+    <hr />
+
+    <h4>Book Copies</h4>
+
+    @if (Model.Copies != null && Model.Copies.Any())
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Cover</th>
+                    <th>Condition</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var copy in Model.Copies)
+                {
+                    <tr class="@(copy.IsPulledOut ? "table-danger" : "")">
+                        <td>
+                            <img src="@copy.CoverImageUrl" alt="Copy Cover" style="width:80px;height:auto;" />
+                        </td>
+                        <td>@copy.Condition</td>
+                        <td>@copy.Source</td>
+                        <td>
+                            @if (copy.IsPulledOut)
+                            {
+                                <span class="badge bg-danger">Pulled Out</span>
+                                <br />
+                                <small class="text-muted">
+                                    Date: @copy.PulloutDate?.ToString("yyyy-MM-dd")
+                                    <br />
+                                    Reason: @copy.PulloutReason
+                                </small>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!copy.IsPulledOut)
+                            {
+                                <button type="button"
+                                        class="btn btn-sm btn-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#pulloutModal"
+                                        onclick="setPulloutCopyId('@copy.CopyId')">
+                                    <i class="bi bi-box-arrow-right"></i> Pull-out
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No copies available for this book.</p>
+    }
+
 </div>
 
 <div class="modal-footer">
-    <!-- Close goes back -->
     <button type="button" class="btn btn-outline-primary" onclick="goBackOrRedirect()">
         <i class="bi bi-arrow-left"></i> Close
     </button>
 
-    <!-- Open Add Copy Modal -->
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCopyModal">
-        <i class="bi bi-plus-circle"></i> Add Copy
-    </button>
-</div>
+    >
+@await Html.PartialAsync("_AddCopyPartial", new AddBookCopyViewModel { BookId = Model.BookId })
 
-<!-- Add Copy Modal -->
-<div class="modal fade" id="addCopyModal" tabindex="-1" aria-labelledby="addCopyModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form asp-action="AddCopy" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addCopyModalLabel">Add Book Copy</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="BookId" value="@Model.BookId" />
-
-                    <div class="form-group mb-3">
-                        <label for="CoverImageUrl">Cover Image URL</label>
-                        <input class="form-control" id="CoverImageUrl" name="CoverImageUrl" required />
+    <div class="modal fade" id="pulloutModal" tabindex="-1" aria-labelledby="pulloutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="ConfirmPullout" method="post">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="pulloutModalLabel">Pull-out Book Copy</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="CopyId" name="CopyId" />
 
-                    <div class="form-group mb-3">
-                        <label for="Condition">Condition</label>
-                        <input class="form-control" id="Condition" name="Condition" required />
+                        <div class="form-group mb-3">
+                            <label for="PulloutReason">Reason for Pull-out</label>
+                            <textarea class="form-control" id="PulloutReason" name="PulloutReason" required></textarea>
+                        </div>
                     </div>
-
-                    <div class="form-group mb-3">
-                        <label for="Source">Source</label>
-                        <input class="form-control" id="Source" name="Source" required />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Confirm Pull-out</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save Copy</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
 @section Scripts {
-    <script>
-        function goBackOrRedirect() {
-            if (document.referrer && document.referrer !== window.location.href) {
-                history.back();
-            } else {
-                window.location.href = '@Url.Action("Index", "Book")';
+        <script>
+            function goBackOrRedirect() {
+                if (document.referrer && document.referrer !== window.location.href) {
+                    history.back();
+                } else {
+                    window.location.href = '@Url.Action("Index", "Book")';
+                }
             }
-        }
-    </script>
+
+            function setPulloutCopyId(copyId) {
+                document.getElementById("CopyId").value = copyId;
+            }
+        </script>
 }

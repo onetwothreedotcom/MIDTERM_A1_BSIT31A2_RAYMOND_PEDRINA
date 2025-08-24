@@ -6,11 +6,17 @@
 
 <h1 class="mb-4 fw-bold">Book Library</h1>
 
+<p>
+    <a asp-action="ArchivedList" class="btn btn-secondary">
+        <i class="bi bi-archive icon-orange"></i> View Archived Books
+    </a>
+</p>
+
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4">
     <div class="col">
         <a href="javascript:void(0);" class="card h-100 shadow-sm border-0 d-flex align-items-center justify-content-center text-decoration-none add-card" onclick="openAddModal()">
             <div class="text-center">
-                <i class="bi bi-plus-circle" style="font-size: 3rem; color: green;"></i>
+                <i class="bi bi-plus-circle icon-green" style="font-size: 3rem;"></i>
                 <p class="mt-2 text-muted">Add Book</p>
             </div>
         </a>
@@ -25,18 +31,25 @@
                        class="action-btn"
                        title="Edit"
                        onclick="openEditModal('@book.BookId')">
-                        <i class="bi bi-pencil" style="color: blue;"></i>
+                        <i class="bi bi-pencil icon-blue"></i>
                     </a>
 
                     <a asp-action="Details" asp-route-id="@book.BookId" class="action-btn" title="Details">
-                        <i class="bi bi-eye" style="color: black;"></i>
+                        <i class="bi bi-eye icon-gray"></i>
                     </a>
 
                     <a href="javascript:void(0);"
                        class="action-btn"
                        title="Delete"
                        onclick="openDeleteModal('@book.BookId')">
-                        <i class="bi bi-trash" style="color: red;"></i>
+                        <i class="bi bi-trash icon-red"></i>
+                    </a>
+
+                    <a asp-action="Archive" asp-route-id="@book.BookId"
+                       class="action-btn"
+                       title="Archive"
+                       onclick="return confirm('Are you sure you want to archive this book?')">
+                        <i class="bi bi-archive icon-orange"></i>
                     </a>
                 </div>
 
@@ -58,7 +71,8 @@
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content"></div>
+        <div class="modal-content">
+        </div>
     </div>
 </div>
 
@@ -125,3 +139,25 @@
         });
     </script>
 }
+
+<style>
+    .icon-green {
+        color: green;
+    }
+
+    .icon-blue {
+        color: blue;
+    }
+
+    .icon-gray {
+        color: gray;
+    }
+
+    .icon-red {
+        color: red;
+    }
+
+    .icon-orange {
+        color: darkorange;
+    }
+</style>

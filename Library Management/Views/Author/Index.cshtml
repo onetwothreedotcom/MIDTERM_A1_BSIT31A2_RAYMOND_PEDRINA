@@ -1,0 +1,101 @@
+﻿@model IEnumerable<Library_Management.Models.Author>
+
+@{
+    ViewData["Title"] = "Authors";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-people"></i> Authors</h2>
+    <div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Author
+        </a>
+        <a asp-action="ArchivedList" class="btn btn-outline-secondary">
+            <i class="bi bi-archive"></i> View Archived
+        </a>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Profile</th>
+                    <th>Name</th>
+                    <th>Birth Date</th>
+                    <th>Books</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var author in Model)
+                {
+                    var bookService = BookService.Instance;
+                    var bookCount = bookService.GetBooks(includeArchived: true)
+                    .Count(b => b.AuthorName?.Equals(author.Name, StringComparison.OrdinalIgnoreCase) == true);
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(author.ProfileImageUrl))
+                            {
+                                <img src="@author.ProfileImageUrl" alt="@author.Name"
+                                     class="rounded-circle"
+                                     style="width:50px; height:50px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
+                                     style="width:50px; height:50px;">
+                                    <i class="bi bi-person text-white"></i>
+                                </div>
+                            }
+                        </td>
+                        <td>
+                            <strong>@author.Name</strong>
+                            @if (!string.IsNullOrEmpty(author.Biography))
+                            {
+                                <br>
+                    
+                                <small class="text-muted">@(author.Biography.Length > 60 ? author.Biography.Substring(0, 60) + "..." : author.Biography)</small>
+                            }
+                        </td>
+                        <td>@author.BirthDate.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <span class="badge bg-primary">@bookCount book(s)</span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a asp-action="Details" asp-route-id="@author.AuthorId"
+                                   class="btn btn-outline-info btn-sm" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@author.AuthorId"
+                                   class="btn btn-outline-warning btn-sm" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Archive" asp-route-id="@author.AuthorId"
+                                   class="btn btn-outline-secondary btn-sm" title="Archive"
+                                   onclick="return confirm('Are you sure you want to archive this author?')">
+                                    <i class="bi bi-archive"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@author.AuthorId"
+                                   class="btn btn-outline-danger btn-sm" title="Delete"
+                                   onclick="return confirm('Are you sure you want to delete this author?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <h4><i class="bi bi-info-circle"></i> No Authors Found</h4>
+        <p>There are currently no authors in the system. <a asp-action="Create" class="btn btn-primary btn-sm">Add the first author</a></p>
+    </div>
+}

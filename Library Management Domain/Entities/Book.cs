@@ -15,6 +15,9 @@ namespace Library_Management_Domain.Entities
         public string? Description { get; set; } = default!;
         public string? Genre { get;set; } = default!;
         public DateTime? PublishedDate { get; set; } = default!;
+        public bool IsArchived { get; set; } = false;
+        public string? AuthorName { get; set; } = default!;
+        public string? CoverImageUrl { get; set; } = default!;
 
     }
 

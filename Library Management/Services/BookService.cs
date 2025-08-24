@@ -1,5 +1,7 @@
 ﻿using Library_Management.Models;
 using Library_Management_Domain.Entities;
+using Author = Library_Management_Domain.Entities.Author;
+using BookCopy = Library_Management_Domain.Entities.BookCopy;
 
 public class BookService
 {
@@ -258,22 +260,23 @@ public class BookService
 
 
 
-    public IEnumerable<BookListViewModel> GetBooks()
+    public IEnumerable<BookListViewModel> GetBooks(bool includeArchived = false)
     {
-        return _books.Select(b => new BookListViewModel
+        var query = includeArchived ? _books : _books.Where(b => !b.IsArchived);
+        return query.Select(b => new BookListViewModel
         {
             BookId = b.Id,
             Title = b.Title,
             ISBN = b.ISBN,
             Description = b.Description,
             Genre = b.Genre,
-
             PublishedDate = b.PublishedDate,
             CoverImageUrl = _bookCopies.FirstOrDefault(bi => bi.Book.Id == b.Id)?.CoverImageUrl,
             AuthorName = _authors.FirstOrDefault(a => a.Books.Any(bk => bk.Id == b.Id))?.Name,
             AuthorProfileImageUrl = _authors.FirstOrDefault(a => a.Books.Any(bk => bk.Id == b.Id))?.ProfileImageUrl,
             TotalCopies = _bookCopies.Count(bi => bi.Book.Id == b.Id),
-            AvailableCopies = _bookCopies.Count(bi => bi.Book.Id == b.Id && bi.PulloutDate == null)
+            AvailableCopies = _bookCopies.Count(bi => bi.Book.Id == b.Id && bi.PulloutDate == null),
+            IsArchived = b.IsArchived
         });
     }
 
@@ -427,6 +430,68 @@ public class BookService
 
         _bookCopies.Add(newCopy);
     }
+    // Replace the PulloutCopy method to use the in-memory _bookCopies collection instead of _context
 
+    public bool PulloutCopy(Guid copyId, string reason)
+    {
+        var copy = _bookCopies.FirstOrDefault(c => c.Id == copyId);
+        if (copy == null) return false;
 
+        copy.PulloutReason = reason;
+        copy.PulloutDate = DateTime.Now;
+
+        // No need to call _context.SaveChanges() since this is an in-memory collection
+        return true;
+    }
+    public void ArchiveBook(Guid id)
+    {
+        var book = _books.FirstOrDefault(b => b.Id == id);
+        if (book != null)
+        {
+            book.IsArchived = true;
+        }
+    }
+
+    public void RestoreBook(Guid id)
+    {
+        var book = _books.FirstOrDefault(b => b.Id == id);
+        if (book != null)
+        {
+            book.IsArchived = false;
+        }
+    }
+
+    public BookDetailsViewModel GetBook(Guid id)
+    {
+        var book = _books.FirstOrDefault(b => b.Id == id);
+        if (book == null) return null;
+
+        var author = _authors.FirstOrDefault(a => a.Books.Any(bk => bk.Id == book.Id));
+        var bookCopy = _bookCopies.FirstOrDefault(bi => bi.Book.Id == book.Id);
+
+        return new BookDetailsViewModel
+        {
+            BookId = book.Id,
+            Title = book.Title,
+            ISBN = book.ISBN,
+            AuthorName = author?.Name ?? "Unknown Author",
+            AuthorProfileImageUrl = author?.ProfileImageUrl ?? "",
+            Genre = book.Genre,
+            PublishedDate = book.PublishedDate ?? DateTime.MinValue,
+            Description = book.Description,
+            CoverImageUrl = bookCopy?.CoverImageUrl ?? "",
+            Copies = _bookCopies
+                .Where(bc => bc.Book.Id == book.Id)
+                .Select(bc => new BookCopyViewModel
+                {
+                    CopyId = bc.Id,
+                    Condition = bc.Condition,
+                    Source = bc.Source,
+                    CoverImageUrl = bc.CoverImageUrl,
+                    PulloutDate = bc.PulloutDate,
+                    PulloutReason = bc.PulloutReason
+                })
+                .ToList()
+        };
+    }
 }

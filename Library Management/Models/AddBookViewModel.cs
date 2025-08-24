@@ -23,14 +23,12 @@ namespace Library_Management.Models
         [Display(Name = "Published Date")]
         public DateTime? PublishedDate { get; set; }
 
-        // Author-specific fields
         [Display(Name = "Book Author")]
         public string? Author { get; set; }
 
         [Display(Name = "Author Profile Image URL")]
         public string? AuthorProfileImageUrl { get; set; }
 
-        // BookItem-specific fields
         [Display(Name = "Cover Image URL")]
         public string? CoverImageUrl { get; set; }
 

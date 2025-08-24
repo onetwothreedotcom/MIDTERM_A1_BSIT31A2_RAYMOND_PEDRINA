@@ -1,8 +1,79 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Library Management Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mb-5">
+    <h1 class="display-4 mb-3">
+        <i class="bi bi-building text-primary"></i>
+        Welcome to Library Management System
+    </h1>
+    <p class="lead text-muted">Manage your library's books, authors, and collections with ease</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-book"></i> Book Management
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Manage your library's book collection, add new books, track copies, and handle pull-outs.</p>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Book" asp-action="Index" class="btn btn-primary">
+                        <i class="bi bi-collection"></i> View All Books
+                    </a>
+                    <a asp-controller="Book" asp-action="ArchivedList" class="btn btn-outline-secondary">
+                        <i class="bi bi-archive"></i> Archived Books
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-person"></i> Author Management
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Manage author information, biographies, and track their published works in your library.</p>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Author" asp-action="Index" class="btn btn-success">
+                        <i class="bi bi-people"></i> View All Authors
+                    </a>
+                    <a asp-controller="Author" asp-action="Create" class="btn btn-outline-success">
+                        <i class="bi bi-person-plus"></i> Add New Author
+                    </a>
+                    <a asp-controller="Author" asp-action="ArchivedList" class="btn btn-outline-secondary">
+                        <i class="bi bi-archive"></i> Archived Authors
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-0 bg-light">
+            <div class="card-body text-center">
+                <h5 class="card-title">Quick Actions</h5>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a asp-controller="Book" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Add Book
+                    </a>
+                    <a asp-controller="Author" asp-action="Create" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-person-plus"></i> Add Author
+                    </a>
+                    <a asp-controller="Book" asp-action="ArchivedList" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-archive"></i> View Archives
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

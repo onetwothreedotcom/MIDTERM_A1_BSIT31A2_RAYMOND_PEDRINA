@@ -74,35 +74,67 @@ namespace Library_Management.Controllers
 
         public IActionResult Details(Guid id)
         {
-            var book = BookService.Instance.GetBooks().FirstOrDefault(b => b.BookId == id);
+            var book = BookService.Instance.GetBook(id);
             if (book == null)
                 return NotFound();
 
             return View(book);
         }
         private readonly BookService _bookService = BookService.Instance;
-        // GET: Show the Add Copy form
         [HttpGet]
         public IActionResult AddCopy(Guid bookId)
         {
-            var vm = new AddBookCopyViewModel
-            {
-                BookId = bookId
-            };
-            return View(vm);
+            var vm = new AddBookCopyViewModel { BookId = bookId };
+            return PartialView("_AddCopyPartial", vm); // load partial
         }
 
-        // POST: Handle form submission
         [HttpPost]
         public IActionResult AddCopy(AddBookCopyViewModel vm)
         {
             if (!ModelState.IsValid)
-            {
-                return View(vm);
-            }
+                return PartialView("_AddCopyPartial", vm);
 
             _bookService.AddBookCopy(vm);
-            return RedirectToAction("Details", new { id = vm.BookId }); // Redirect to book details
+            return RedirectToAction("Details", new { id = vm.BookId });
+        }
+        public IActionResult PulloutModal(Guid copyId)
+        {
+            var model = new PulloutBookCopyViewModel
+            {
+                CopyId = copyId
+            };
+            return PartialView("PulloutModal", model);
+        }
+
+        [HttpPost]
+        public IActionResult ConfirmPullout(PulloutBookCopyViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                BookService.Instance.PulloutCopy(model.CopyId, model.PulloutReason);
+                return Ok();
+            }
+            return BadRequest("Invalid request");
+        }
+
+        // Archiving functionality
+        public IActionResult Archive(Guid id)
+        {
+            BookService.Instance.ArchiveBook(id);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult ArchivedList()
+        {
+            var archivedBooks = BookService.Instance.GetBooks(includeArchived: true)
+                .Where(b => b.IsArchived);
+            return View(archivedBooks);
+        }
+
+        public IActionResult Restore(Guid id)
+        {
+            BookService.Instance.RestoreBook(id);
+            return RedirectToAction("ArchivedList");
         }
 
     }

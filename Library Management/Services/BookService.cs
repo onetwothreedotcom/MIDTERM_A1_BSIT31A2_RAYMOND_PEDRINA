@@ -3,7 +3,7 @@ using Library_Management_Domain.Entities;
 using Author = Library_Management_Domain.Entities.Author;
 using BookCopy = Library_Management_Domain.Entities.BookCopy;
 
-public class BookService
+public class BookService : IBookService
 {
     private readonly ICollection<Book> _books = new List<Book>();
     private readonly ICollection<Author> _authors = new List<Author>();
